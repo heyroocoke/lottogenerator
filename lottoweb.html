@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로또 번호 생성기</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --background-color: #1E1E1E;
+            --number-background: #2D2D2D;
+            --bonus-color: #FF4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+        }
+
+        .main-numbers {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 2rem;
+            flex-wrap: nowrap;
+        }
+
+        .number {
+            width: 60px;
+            height: 60px;
+            background-color: var(--number-background);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+
+        .bonus {
+            background-color: var(--bonus-color);
+        }
+
+        .number.active {
+            animation: pop 0.3s ease-out;
+        }
+
+        .history-container {
+            margin-top: 2rem;
+            padding: 20px;
+            background-color: rgba(45, 45, 45, 0.5);
+            border-radius: 10px;
+            overflow-x: auto;
+        }
+
+        .history-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 15px 0;
+            flex-wrap: nowrap;
+            align-items: center;
+            min-width: max-content;
+        }
+
+        .history-number {
+            width: 40px;
+            height: 40px;
+            background-color: var(--number-background);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .history-bonus {
+            background-color: var(--bonus-color);
+        }
+
+        .plus-sign {
+            margin: 0 5px;
+            font-size: 20px;
+            color: #888;
+            flex-shrink: 0;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 10px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .number {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+
+            .history-number {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+
+            .history-row {
+                gap: 4px;
+            }
+
+            .plus-sign {
+                margin: 0 2px;
+                font-size: 14px;
+            }
+
+            .main-numbers {
+                gap: 8px;
+            }
+
+            button {
+                padding: 12px 24px;
+                font-size: 1rem;
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .history-container {
+                padding: 10px;
+                margin-top: 1rem;
+            }
+        }
+
+        /* 가로 스크롤바 스타일링 */
+        .history-container::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .history-container::-webkit-scrollbar-track {
+            background: #2D2D2D;
+            border-radius: 3px;
+        }
+
+        .history-container::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        .history-container::-webkit-scrollbar-thumb:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>로또 번호 생성기</h1>
+        <div class="main-numbers">
+            <div class="number">00</div>
+            <div class="number">00</div>
+            <div class="number">00</div>
+            <div class="number">00</div>
+            <div class="number">00</div>
+            <div class="number">00</div>
+            <div class="number bonus">00</div>
+        </div>
+        <button onclick="generateNumbers()">번호 생성</button>
+        <div class="history-container">
+            <h2 style="margin-bottom: 20px">추가 번호 조합</h2>
+            <div id="history"></div>
+        </div>
+    </div>
+
+
+    <script>
+function generateLottoNumbers() {
+            const numbers = new Set();
+            while(numbers.size < 6) {
+                numbers.add(Math.floor(Math.random() * 45) + 1);
+            }
+            let bonus;
+            do {
+                bonus = Math.floor(Math.random() * 45) + 1;
+            } while(numbers.has(bonus));
+            
+            return {
+                numbers: Array.from(numbers).sort((a, b) => a - b),
+                bonus: bonus
+            };
+        }
+
+        function createHistoryRow(numbers, bonus) {
+            const row = document.createElement('div');
+            row.className = 'history-row';
+            
+            numbers.forEach(number => {
+                const numDiv = document.createElement('div');
+                numDiv.className = 'history-number';
+                numDiv.textContent = String(number).padStart(2, '0');
+                row.appendChild(numDiv);
+            });
+
+            const plusSign = document.createElement('div');
+            plusSign.className = 'plus-sign';
+            plusSign.textContent = '+';
+            row.appendChild(plusSign);
+
+            const bonusDiv = document.createElement('div');
+            bonusDiv.className = 'history-number history-bonus';
+            bonusDiv.textContent = String(bonus).padStart(2, '0');
+            row.appendChild(bonusDiv);
+
+            return row;
+        }
+
+        function generateNumbers() {
+            // 메인 번호 생성
+            const mainLotto = generateLottoNumbers();
+
+            // 메인 번호 표시
+            const numberElements = document.querySelectorAll('.main-numbers .number');
+            mainLotto.numbers.forEach((number, index) => {
+                setTimeout(() => {
+                    numberElements[index].textContent = String(number).padStart(2, '0');
+                    numberElements[index].classList.add('active');
+                    setTimeout(() => {
+                        numberElements[index].classList.remove('active');
+                    }, 300);
+                }, index * 100);
+            });
+
+            // 보너스 번호 표시
+            setTimeout(() => {
+                numberElements[6].textContent = String(mainLotto.bonus).padStart(2, '0');
+                numberElements[6].classList.add('active');
+                setTimeout(() => {
+                    numberElements[6].classList.remove('active');
+                }, 300);
+            }, 600);
+
+            // 히스토리 초기화
+            const historyContainer = document.getElementById('history');
+            historyContainer.innerHTML = '';
+
+            // 추가 5줄 생성
+            for(let i = 0; i < 5; i++) {
+                const lotto = generateLottoNumbers();
+                const historyRow = createHistoryRow(lotto.numbers, lotto.bonus);
+                historyContainer.appendChild(historyRow);
+            }
+        }
+
+    </script>
+</body>
+</html>
